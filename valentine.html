@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ma Valentine ?</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(to right, #ff7e5f, #feb47b); /* Dégradé de couleurs chaudes */
+            color: white;
+            text-align: center;
+            overflow: hidden; /* Empêche le défilement et gère les feux d'artifice */
+        }
+
+        .container {
+            background-color: rgba(255, 255, 255, 0.2); /* Fond semi-transparent pour le contenu */
+            padding: 40px 60px;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            backdrop-filter: blur(5px); /* Effet de flou sur l'arrière-plan */
+            z-index: 1; /* S'assure que le contenu est au-dessus du bouton "Non" s'il passe dessous */
+            position: relative; /* Pour z-index */
+            display: flex; /* Utilisation de flexbox pour centrer le contenu */
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            max-width: 90%; /* Pour les petits écrans */
+            min-height: 300px; /* Pour s'assurer que le container ne soit pas trop petit */
+        }
+
+        h1 {
+            font-size: 3em;
+            margin-bottom: 30px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .buttons {
+            display: flex;
+            justify-content: center;
+            gap: 30px; /* Espace entre les boutons */
+            min-height: 80px; /* Pour éviter que le conteneur ne se réduise */
+        }
+
+        .button {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 30px;
+            font-size: 1.2em; /* Taille de base */
+            cursor: pointer;
+            transition: all 0.3s ease-in-out; /* Transition pour les propriétés, y compris la taille */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            text-decoration: none;
+            color: white;
+            display: inline-block;
+        }
+
+        .button:hover {
+            transform: translateY(-3px);
+        }
+
+        #yesBtn {
+            background-color: #4CAF50; /* Vert */
+        }
+
+        #yesBtn:hover {
+            background-color: #45a049;
+        }
+
+        #noBtn {
+            background-color: #f44336; /* Rouge */
+            position: fixed; /* Le bouton se déplace par rapport à la fenêtre du navigateur */
+            left: 50%; /* Position initiale, sera écrasée par JS */
+            top: 50%; /* Position initiale, sera écrasée par JS */
+            transform: translate(-50%, -50%); /* Centrer initialement le bouton */
+            z-index: 999; /* S'assure qu'il est toujours au-dessus */
+        }
+
+        #noBtn:hover {
+            background-color: #da190b;
+        }
+
+        /* Styles pour le message de confirmation/refus */
+        .message {
+            margin-top: 30px;
+            font-size: 1.5em;
+            color: white;
+            opacity: 0; /* Caché par défaut */
+            transition: opacity 0.5s ease-in-out;
+        }
+
+        .message.show {
+            opacity: 1;
+        }
+
+        /* Style pour le GIF */
+        #celebrationGif {
+            max-width: 100%; /* S'assure que le GIF ne déborde pas */
+            height: auto;
+            margin-top: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            display: none; /* Caché par défaut */
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1 id="questionText">Alice, veux-tu être ma Valentine ? ❤️</h1>
+        <div id="interactionArea">
+            <div class="buttons">
+                <button id="yesBtn" class="button">Oui !</button>
+            </div>
+            <p id="responseMessage" class="message"></p>
+        </div>
+        <!-- Emplacement pour le GIF -->
+        <img id="celebrationGif" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnBmNmJkZXBwejh6ZXl2eDA3MGFvM2tteHlyYzIyN2pydXIzNWZzcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gncNNY4el7xFS/giphy.gif" alt="Célébration">
+    </div>
+    <!-- Le bouton "Non" est placé en dehors du .container pour qu'il puisse bouger librement sur toute la page -->
+    <button id="noBtn" class="button">Non</button>
+
+    <!-- Script pour les feux d'artifice (confetti.js) -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.9.2/dist/confetti.browser.min.js"></script>
+
+    <script>
+        const noBtn = document.getElementById('noBtn');
+        const yesBtn = document.getElementById('yesBtn');
+        const responseMessage = document.getElementById('responseMessage');
+        const celebrationGif = document.getElementById('celebrationGif');
+        const questionText = document.getElementById('questionText');
+        const interactionArea = document.getElementById('interactionArea');
+
+
+        // Variables pour gérer la taille du bouton "Oui"
+        let yesBtnCurrentFontSize = 1.2; // Taille initiale en em
+        const yesBtnIncrement = 0.2; // Incrément de taille à chaque survol du bouton "Non"
+
+        // Position initiale du bouton "Non" (centré)
+        noBtn.style.left = `${window.innerWidth / 2}px`;
+        noBtn.style.top = `${window.innerHeight / 2 + 100}px`; // Décalé un peu plus bas que le centre pour ne pas chevaucher le conteneur
+
+        // Fonction pour déplacer le bouton "Non" et faire grandir "Oui"
+        noBtn.addEventListener('mouseover', () => {
+            // ----- Déplacement du bouton "Non" -----
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+
+            // Calculer les positions aléatoires en s'assurant que le bouton reste visible
+            const newX = Math.random() * (viewportWidth - btnWidth - 40) + 20;
+            const newY = Math.random() * (viewportHeight - btnHeight - 40) + 20;
+
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
+
+            // ----- Faire grandir le bouton "Oui" -----
+            yesBtnCurrentFontSize += yesBtnIncrement;
+            yesBtn.style.fontSize = `${yesBtnCurrentFontSize}em`;
+            // Augmenter aussi le padding pour que le bouton ne paraisse pas juste avec un texte plus grand
+            const currentPaddingTopBottom = parseFloat(getComputedStyle(yesBtn).paddingTop);
+            const currentPaddingLeftRight = parseFloat(getComputedStyle(yesBtn).paddingLeft);
+            yesBtn.style.padding = `${currentPaddingTopBottom + 2}px ${currentPaddingLeftRight + 4}px`;
+        });
+
+        // Gérer le clic sur le bouton "Oui"
+        yesBtn.addEventListener('click', () => {
+            // Masquer la question, la zone d'interaction (qui contient le bouton Oui) et le bouton Non
+            questionText.style.display = 'none';
+            interactionArea.style.display = 'none'; // Cela masquera aussi le bouton Oui
+            noBtn.style.display = 'none';
+
+            // Afficher le GIF
+            celebrationGif.style.display = 'block';
+
+            // Lancer les feux d'artifice
+            // Petite explosion de confettis
+            confetti({
+                particleCount: 150,
+                spread: 70,
+                origin: { y: 0.6 }
+            });
+            // Pour des tirs multiples et plus spectaculaires
+            const duration = 5 * 1000;
+            const animationEnd = Date.now() + duration;
+            const defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            const interval = setInterval(function() {
+                const timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                const particleCount = 50 * (timeLeft / duration);
+                // since particles fall down, we start a bit higher than random
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 } }));
+                confetti(Object.assign({}, defaults, { particleCount, origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 } }));
+            }, 250);
+
+
+            // Optionnel: Changer l'arrière-plan ou ajouter un message final au-dessus du GIF si vous le souhaitez
+            document.body.style.background = 'linear-gradient(to right, #833ab4, #fd1d1d, #fcb045)'; // Un fond plus festif
+
+            // Si vous voulez un message de confirmation juste en dessous du GIF
+            responseMessage.textContent = "Je savais que t'allais dire oui, rdv samedi soir 20h ❤️";
+            responseMessage.style.color = '#FFFFFF';
+            responseMessage.style.fontSize = '2em';
+            responseMessage.style.marginTop = '20px';
+            responseMessage.classList.add('show');
+            responseMessage.style.display = 'block'; // S'assurer qu'il est visible
+            // Positionner le message en dessous du GIF
+            celebrationGif.parentNode.insertBefore(responseMessage, celebrationGif.nextSibling);
+
+            // Pour s'assurer que le container se redimensionne correctement
+            document.querySelector('.container').style.padding = '20px';
+            document.querySelector('.container').style.height = 'auto';
+            document.querySelector('.container').style.justifyContent = 'center';
+        });
+
+        // Gérer le clic sur le bouton "Non" (si elle arrive à cliquer dessus !)
+        noBtn.addEventListener('click', () => {
+            responseMessage.textContent = "Oh... C'est dommage, mais j'espère que tu passeras quand même une belle Saint-Valentin !";
+            responseMessage.style.color = '#F28A8A'; // Rouge clair
+            responseMessage.classList.add('show');
+            // Désactiver les boutons après la réponse
+            yesBtn.disabled = true;
+            noBtn.disabled = true;
+            noBtn.style.pointerEvents = 'none';
+            noBtn.style.opacity = '0.5'; // Rendre le bouton "Non" semi-transparent
+            noBtn.style.cursor = 'default';
+        });
+
+        // Ajuster la position initiale du bouton "Non" au chargement pour qu'il soit bien centré
+        window.addEventListener('load', () => {
+            noBtn.style.left = `${(window.innerWidth - noBtn.offsetWidth) / 2}px`;
+            noBtn.style.top = `${(window.innerHeight - noBtn.offsetHeight) / 2 + 100}px`; // Ajusté pour qu'il ne soit pas sous le texte
+        });
+
+        // Ajuster la position du bouton "Non" si la fenêtre est redimensionnée
+        window.addEventListener('resize', () => {
+            noBtn.style.left = `${(window.innerWidth - noBtn.offsetWidth) / 2}px`;
+            noBtn.style.top = `${(window.innerHeight - noBtn.offsetHeight) / 2 + 100}px`;
+        });
+
+    </script>
+</body>
+</html>
