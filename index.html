@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ma Valentine ?</title>
+    <title>J'ai une question</title>
     <style>
         body {
             display: flex;
@@ -36,7 +36,7 @@
 
         h1 {
             font-size: 3em;
-            margin-bottom: 30px;
+            margin-bottom: 30px; /* Espace sous le titre */
             text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
         }
 
@@ -98,7 +98,21 @@
             opacity: 1;
         }
 
-        /* Style pour le GIF */
+        /* Style pour le GIF de la question */
+        #questionGif {
+            max-width: 400px; /* Augmenté à une taille plus grande (vous pouvez ajuster cette valeur) */
+            width: 80%; /* S'adaptera à 80% de la largeur du conteneur, utile pour la réactivité */
+            height: auto; /* Maintient les proportions */
+            max-width: ;margin-bottom: 30px; /* Un peu plus d'espace en dessous */
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+            /* Optionnel: pour centrer le GIF si son parent est un bloc */
+            display: block; /* S'assure que margin auto fonctionne */
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        /* Style pour le GIF de célébration */
         #celebrationGif {
             max-width: 100%; /* S'assure que le GIF ne déborde pas */
             height: auto;
@@ -111,14 +125,17 @@
 </head>
 <body>
     <div class="container">
-        <h1 id="questionText">Alice, veux-tu être ma Valentine ? ❤️</h1>
+        <!-- Nouveau GIF pour la question -->
+        <img id="questionGif" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExaGtwbTN2a2tpZ3h1MHQyb25rOGRmOXFlY3J4dXBoYXk5ZjV2dmJmcSZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/0qFg72LXllRfDx1oGX/giphy.gif" alt="Question GIF">
+        
+        <h1 id="questionText">Alice, veux-tu être ma Valentine ? </h1>
         <div id="interactionArea">
             <div class="buttons">
                 <button id="yesBtn" class="button">Oui !</button>
             </div>
             <p id="responseMessage" class="message"></p>
         </div>
-        <!-- Emplacement pour le GIF -->
+        <!-- Emplacement pour le GIF de célébration -->
         <img id="celebrationGif" src="https://media3.giphy.com/media/v1.Y2lkPTc5MGI3NjExZnBmNmJkZXBwejh6ZXl2eDA3MGFvM2tteHlyYzIyN2pydXIzNWZzcCZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/gncNNY4el7xFS/giphy.gif" alt="Célébration">
     </div>
     <!-- Le bouton "Non" est placé en dehors du .container pour qu'il puisse bouger librement sur toute la page -->
@@ -132,6 +149,7 @@
         const yesBtn = document.getElementById('yesBtn');
         const responseMessage = document.getElementById('responseMessage');
         const celebrationGif = document.getElementById('celebrationGif');
+        const questionGif = document.getElementById('questionGif'); // Nouveau : Référence au GIF de la question
         const questionText = document.getElementById('questionText');
         const interactionArea = document.getElementById('interactionArea');
 
@@ -170,12 +188,13 @@
 
         // Gérer le clic sur le bouton "Oui"
         yesBtn.addEventListener('click', () => {
-            // Masquer la question, la zone d'interaction (qui contient le bouton Oui) et le bouton Non
+            // Masquer la question, la zone d'interaction (qui contient le bouton Oui) et le bouton Non, ainsi que le GIF de la question
             questionText.style.display = 'none';
-            interactionArea.style.display = 'none'; // Cela masquera aussi le bouton Oui
+            interactionArea.style.display = 'none';
             noBtn.style.display = 'none';
+            questionGif.style.display = 'none'; // Nouveau : Masquer le GIF de la question
 
-            // Afficher le GIF
+            // Afficher le GIF de célébration
             celebrationGif.style.display = 'block';
 
             // Lancer les feux d'artifice
@@ -212,7 +231,7 @@
             document.body.style.background = 'linear-gradient(to right, #833ab4, #fd1d1d, #fcb045)'; // Un fond plus festif
 
             // Si vous voulez un message de confirmation juste en dessous du GIF
-            responseMessage.textContent = "Je savais que t'allais dire oui, rdv samedi soir 20h ❤️";
+            responseMessage.textContent = "Je savais que t'allais dire oui, rdv samedi soir 20h ! ❤️";
             responseMessage.style.color = '#FFFFFF';
             responseMessage.style.fontSize = '2em';
             responseMessage.style.marginTop = '20px';
@@ -229,7 +248,7 @@
 
         // Gérer le clic sur le bouton "Non" (si elle arrive à cliquer dessus !)
         noBtn.addEventListener('click', () => {
-            responseMessage.textContent = "Oh... C'est dommage, mais j'espère que tu passeras quand même une belle Saint-Valentin !";
+            responseMessage.textContent = "Ok ciao";
             responseMessage.style.color = '#F28A8A'; // Rouge clair
             responseMessage.classList.add('show');
             // Désactiver les boutons après la réponse
@@ -243,7 +262,7 @@
         // Ajuster la position initiale du bouton "Non" au chargement pour qu'il soit bien centré
         window.addEventListener('load', () => {
             noBtn.style.left = `${(window.innerWidth - noBtn.offsetWidth) / 2}px`;
-            noBtn.style.top = `${(window.innerHeight - noBtn.offsetHeight) / 2 + 100}px`; // Ajusté pour qu'il ne soit pas sous le texte
+            noBtn.style.top = `${(window.innerHeight - noBtn.offsetHeight) / 2 + 100}px`; // Ajusté pour qu'it ne soit pas sous le texte
         });
 
         // Ajuster la position du bouton "Non" si la fenêtre est redimensionnée
